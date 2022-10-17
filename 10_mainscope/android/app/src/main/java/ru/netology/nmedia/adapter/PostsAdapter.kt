@@ -1,8 +1,10 @@
 package ru.netology.nmedia.adapter
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -46,36 +48,40 @@ class PostViewHolder(
             avatar.loadCircleCrop("${BuildConfig.BASE_URL}/avatars/${post.authorAvatar}")
             like.isChecked = post.likedByMe
             like.text = "${post.likes}"
-
-            menu.setOnClickListener {
-                PopupMenu(it.context, it).apply {
-                    inflate(R.menu.options_post)
-                    setOnMenuItemClickListener { item ->
-                        when (item.itemId) {
-                            R.id.remove -> {
-                                onInteractionListener.onRemove(post)
-                                true
-                            }
-                            R.id.edit -> {
-                                onInteractionListener.onEdit(post)
-                                true
-                            }
-
-                            else -> false
+            if (post.status == false) {
+                binding.add1.visibility = View.VISIBLE
+            } else {
+                binding.add2.visibility = View.VISIBLE
+            }
+        menu.setOnClickListener {
+            PopupMenu(it.context, it).apply {
+                inflate(R.menu.options_post)
+                setOnMenuItemClickListener { item ->
+                    when (item.itemId) {
+                        R.id.remove -> {
+                            onInteractionListener.onRemove(post)
+                            true
                         }
+                        R.id.edit -> {
+                            onInteractionListener.onEdit(post)
+                            true
+                        }
+
+                        else -> false
                     }
-                }.show()
-            }
+                }
+            }.show()
+        }
 
-            like.setOnClickListener {
-                onInteractionListener.onLike(post)
-            }
+        like.setOnClickListener {
+            onInteractionListener.onLike(post)
+        }
 
-            share.setOnClickListener {
-                onInteractionListener.onShare(post)
-            }
+        share.setOnClickListener {
+            onInteractionListener.onShare(post)
         }
     }
+}
 }
 
 class PostDiffCallback : DiffUtil.ItemCallback<Post>() {

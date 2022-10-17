@@ -73,9 +73,9 @@ class FeedFragment : Fragment() {
         }
 
         binding.fab.setOnClickListener {
+            viewModel.saveNewPost()
             findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
         }
-
         return binding.root
     }
 }

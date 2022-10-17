@@ -18,7 +18,8 @@ private val empty = Post(
     authorAvatar = "",
     likedByMe = false,
     likes = 0,
-    published = ""
+    published = "",
+    status = false
 )
 
 class PostViewModel(application: Application) : AndroidViewModel(application) {
@@ -88,10 +89,32 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun likeById(id: Long) {
-        TODO()
+       viewModelScope.launch {
+           try {
+               repository.likeById(id)
+           } catch (e: Exception) {
+               _dataState.value = FeedModelState(error = true)
+           }
+       }
     }
 
     fun removeById(id: Long) {
-        TODO()
+        viewModelScope.launch {
+            try {
+                repository.removeById(id)
+            } catch (e:Exception) {
+                _dataState.value = FeedModelState(error = true)
+            }
+        }
+    }
+    fun saveNewPost() = viewModelScope.launch {
+        println("SAVE NEW POST")
+        try {
+            _dataState.value = FeedModelState(loading = true)
+            repository.saveNewPost()
+            _dataState.value = FeedModelState()
+        } catch (e:Exception) {
+            _dataState.value = FeedModelState(error = true)
+        }
     }
 }
