@@ -1,6 +1,7 @@
 package ru.netology.nmedia.adapter
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.recyclerview.widget.DiffUtil
@@ -39,42 +40,46 @@ class PostViewHolder(
 ) : RecyclerView.ViewHolder(binding.root) {
 
     fun bind(post: Post) {
-        binding.apply {
-            author.text = post.author
-            published.text = post.published
-            content.text = post.content
-            avatar.loadCircleCrop("${BuildConfig.BASE_URL}/avatars/${post.authorAvatar}")
-            like.isChecked = post.likedByMe
-            like.text = "${post.likes}"
-
-            menu.setOnClickListener {
-                PopupMenu(it.context, it).apply {
-                    inflate(R.menu.options_post)
-                    setOnMenuItemClickListener { item ->
-                        when (item.itemId) {
-                            R.id.remove -> {
-                                onInteractionListener.onRemove(post)
-                                true
-                            }
-                            R.id.edit -> {
-                                onInteractionListener.onEdit(post)
-                                true
-                            }
-
-                            else -> false
-                        }
-                    }
-                }.show()
-            }
-
-            like.setOnClickListener {
-                onInteractionListener.onLike(post)
-            }
-
-            share.setOnClickListener {
-                onInteractionListener.onShare(post)
-            }
+        // проверка по статусу, если не прочитан, то не будет появляться в ресайкле
+        if (post.status == false) {
+            binding.status.visibility = View.GONE
         }
+            binding.apply {
+                author.text = post.author
+                published.text = post.published
+                content.text = post.content
+                avatar.loadCircleCrop("${BuildConfig.BASE_URL}/avatars/${post.authorAvatar}")
+                like.isChecked = post.likedByMe
+                like.text = "${post.likes}"
+
+                menu.setOnClickListener {
+                    PopupMenu(it.context, it).apply {
+                        inflate(R.menu.options_post)
+                        setOnMenuItemClickListener { item ->
+                            when (item.itemId) {
+                                R.id.remove -> {
+                                    onInteractionListener.onRemove(post)
+                                    true
+                                }
+                                R.id.edit -> {
+                                    onInteractionListener.onEdit(post)
+                                    true
+                                }
+
+                                else -> false
+                            }
+                        }
+                    }.show()
+                }
+
+                like.setOnClickListener {
+                    onInteractionListener.onLike(post)
+                }
+
+                share.setOnClickListener {
+                    onInteractionListener.onShare(post)
+                }
+            }
     }
 }
 
@@ -87,3 +92,4 @@ class PostDiffCallback : DiffUtil.ItemCallback<Post>() {
         return oldItem == newItem
     }
 }
+

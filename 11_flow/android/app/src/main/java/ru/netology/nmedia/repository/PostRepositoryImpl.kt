@@ -29,7 +29,9 @@ class PostRepositoryImpl(private val dao: PostDao) : PostRepository {
             }
 
             val body = response.body() ?: throw ApiError(response.code(), response.message())
-            dao.insert(body.toEntity())
+            dao.insert(body.toEntity().map {
+                it.copy(status = true)
+            })
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: Exception) {
@@ -46,7 +48,9 @@ class PostRepositoryImpl(private val dao: PostDao) : PostRepository {
             }
 
             val body = response.body() ?: throw ApiError(response.code(), response.message())
-            dao.insert(body.toEntity())
+            dao.insert(body.toEntity().map {
+                it.copy(status = false)
+            })
             emit(body.size)
         }
     }
@@ -70,10 +74,35 @@ class PostRepositoryImpl(private val dao: PostDao) : PostRepository {
     }
 
     override suspend fun removeById(id: Long) {
-        TODO("Not yet implemented")
+        try {
+            dao.removeById(id)
+            val response = PostsApi.service.removeById(id)
+            if (!response.isSuccessful) {
+                throw ApiError(response.code(), response.message())
+            }
+        } catch (e: IOException) {
+            throw NetworkError
+        } catch (e: Exception) {
+            throw UnknownError
+        }
     }
 
     override suspend fun likeById(id: Long) {
         TODO("Not yet implemented")
+    }
+
+    override suspend fun updateStatus() {
+        try {
+            dao.updateStatus()
+        } catch (e: IOException) {
+            throw NetworkError
+        } catch (e: Exception) {
+            throw UnknownError
+        }
+    }
+
+    override suspend fun countStatus(): Int {
+        val sum = dao.countStatus()
+        return sum
     }
 }

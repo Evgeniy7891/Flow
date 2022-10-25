@@ -24,7 +24,8 @@ private val empty = Post(
     authorAvatar = "",
     likedByMe = false,
     likes = 0,
-    published = ""
+    published = "",
+    status = false
 )
 
 class PostViewModel(application: Application) : AndroidViewModel(application) {
@@ -44,6 +45,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         repository.getNewerCount(it.posts.firstOrNull()?.id ?: 0L)
             .catch { e -> e.printStackTrace() }
             .asLiveData(Dispatchers.Default)
+
     }
 
     private val edited = MutableLiveData(empty)
@@ -106,7 +108,31 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         TODO()
     }
 
-    fun removeById(id: Long) {
-        TODO()
+    fun removeById(id: Long) = viewModelScope.launch {
+        try {
+            _dataState.value = FeedModelState(loading = true)
+            repository.removeById(id)
+            _dataState.value = FeedModelState()
+        } catch (e: Exception) {
+            _dataState.value = FeedModelState(error = true)
+        }
     }
-}
+
+    fun newPosts() = viewModelScope.launch {
+        try {
+            _dataState.value = FeedModelState(loading = true)
+            repository.updateStatus()
+            _dataState.value = FeedModelState()
+        } catch (e: Exception) {
+            _dataState.value = FeedModelState(error = true)
+        }
+    }
+
+//    fun countSum(): Int {
+//        val sum = viewModelScope.launch {
+//            repository.countStatus()
+//        }
+//            return z.toString().toInt()
+//        }
+    }
+

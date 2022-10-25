@@ -5,17 +5,23 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.MainThread
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import ru.netology.nmedia.R
 import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostsAdapter
 import ru.netology.nmedia.databinding.FragmentFeedBinding
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.viewmodel.PostViewModel
+import kotlin.concurrent.thread
 
 class FeedFragment : Fragment() {
 
@@ -63,13 +69,32 @@ class FeedFragment : Fragment() {
                     .show()
             }
         }
+
         viewModel.data.observe(viewLifecycleOwner) { state ->
             adapter.submitList(state.posts)
             binding.emptyText.isVisible = state.empty
+            // скролл вверх
+            CoroutineScope(Dispatchers.Main).launch {
+                delay(100)
+                binding.list.scrollToPosition(0)
+            }
         }
-        viewModel.newerCount.observe(viewLifecycleOwner) { state ->
-            // TODO: just log it, interaction must be in homework
-            println(state)
+
+        viewModel.newerCount.observe(viewLifecycleOwner) {
+            //подсчет непрочитанных постов
+            with(binding.buttonNewPost) {
+                if (it > 0) {
+                    text = "Новый пост - $it"
+                    visibility = View.VISIBLE
+                }
+            }
+        }
+        binding.buttonNewPost.setOnClickListener {
+            // убирается плашка после нажатия
+            binding.buttonNewPost.visibility = View.GONE
+            // обновления статуса сообщения
+            viewModel.newPosts()
+            viewModel.loadPosts()
         }
 
         binding.swiperefresh.setOnRefreshListener {
