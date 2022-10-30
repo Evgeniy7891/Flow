@@ -48,7 +48,7 @@ class PostViewHolder(
             avatar.loadCircleCrop("${BuildConfig.BASE_URL}/avatars/${post.authorAvatar}")
             like.isChecked = post.likedByMe
             like.text = "${post.likes}"
-            if (post.status == false) {
+            if (post.status == false) { // проверка состояния статусов постов
                 binding.add1.visibility = View.VISIBLE
             } else {
                 binding.add2.visibility = View.VISIBLE

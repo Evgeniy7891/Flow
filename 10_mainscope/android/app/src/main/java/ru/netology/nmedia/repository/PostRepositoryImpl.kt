@@ -1,5 +1,6 @@
 package ru.netology.nmedia.repository
 
+import android.util.Log
 import androidx.lifecycle.*
 import okio.IOException
 import ru.netology.nmedia.api.*
@@ -33,10 +34,9 @@ class PostRepositoryImpl(private val dao: PostDao) : PostRepository {
         }
     }
 
-    override suspend fun saveNewPost() {
-        println("REPO SAV NEW ")
+    override suspend fun saveNewPost(post: Post) {
         try {
-            dao.saveNewPost()
+            dao.insert(PostEntity.fromDto(post))
         } catch (e:IOException) {
             throw NetworkError
         } catch (e:Exception) {
@@ -46,13 +46,14 @@ class PostRepositoryImpl(private val dao: PostDao) : PostRepository {
 
     override suspend fun save(post: Post) {
         try {
+            post.id = 0 // удаляем локальный id
             val response = PostsApi.service.save(post)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
             val body = response.body() ?: throw ApiError(response.code(), response.message())
+            body.status = true // при положительном резульате меняем статус
             dao.insert(PostEntity.fromDto(body))
-            post.status = true
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: Exception) {

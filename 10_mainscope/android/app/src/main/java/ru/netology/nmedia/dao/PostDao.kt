@@ -34,6 +34,4 @@ interface PostDao {
     )
     suspend fun likeById(id: Long)
 
-    @Query("UPDATE PostEntity SET status = 1 WHERE status = 0")
-    suspend fun saveNewPost()
 }

@@ -35,6 +35,17 @@ class FeedFragment : Fragment() {
         val binding = FragmentFeedBinding.inflate(inflater, container, false)
 
         val adapter = PostsAdapter(object : OnInteractionListener {
+            override fun onPhoto(post: Post) {
+//                with Bundle
+//                val bundle = Bundle()
+                val photo = post.attachment?.url
+//                bundle.putString("MyArg", photo)
+                val action = FeedFragmentDirections.actionFeedFragmentToPhotoFragment(photo!!)
+                //               findNavController().navigate(R.id.action_feedFragment_to_photoFragment, bundle)
+                findNavController().navigate(action)
+
+            }
+
             override fun onEdit(post: Post) {
                 viewModel.edit(post)
             }
@@ -71,13 +82,18 @@ class FeedFragment : Fragment() {
         }
 
         viewModel.data.observe(viewLifecycleOwner) { state ->
-            adapter.submitList(state.posts)
+            val newPost = state.posts.size > adapter.currentList.size
+            adapter.submitList(state.posts) {
+                if (newPost) {
+                    binding.list.scrollToPosition(0)
+                }
+            }
             binding.emptyText.isVisible = state.empty
             // скролл вверх
-            CoroutineScope(Dispatchers.Main).launch {
-                delay(100)
-                binding.list.scrollToPosition(0)
-            }
+            // CoroutineScope(Dispatchers.Main).launch {
+            // delay(100)
+            // binding.list.scrollToPosition(0)
+            // }
         }
 
         viewModel.newerCount.observe(viewLifecycleOwner) {

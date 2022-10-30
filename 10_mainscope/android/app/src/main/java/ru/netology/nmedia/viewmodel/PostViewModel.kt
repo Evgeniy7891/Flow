@@ -1,7 +1,9 @@
 package ru.netology.nmedia.viewmodel
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.*
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.Post
@@ -24,6 +26,8 @@ private val empty = Post(
 
 class PostViewModel(application: Application) : AndroidViewModel(application) {
     // упрощённый вариант
+    var idLocal = 333L
+    val scroll = MutableLiveData(mutableListOf(0)) // подписка для скролла в начало постов
     private val repository: PostRepository =
         PostRepositoryImpl(AppDb.getInstance(context = application).postDao())
 
@@ -63,13 +67,35 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     fun save() {
         edited.value?.let {
+            viewModelScope.launch {
+                try {
+                    it.id = idLocal++
+                    idLocal = it.id
+                    repository.saveNewPost(it)
+                    delay(500)
+                    scroll.value?.add(1)
+                } catch (e : Exception) {
+                    _dataState.value = FeedModelState(error = true)
+                    removeById(idLocal)
+                }
+            }
             _postCreated.value = Unit
             viewModelScope.launch {
                 try {
+                    delay(1000)
                     repository.save(it)
                     _dataState.value = FeedModelState()
                 } catch (e: Exception) {
                     _dataState.value = FeedModelState(error = true)
+                }
+            }
+            viewModelScope.launch {
+                try {
+                    delay(2000)
+                    removeById(idLocal)
+                } catch (e:Exception) {
+                    _dataState.value = FeedModelState(error = true)
+                    removeById(idLocal)
                 }
             }
         }
@@ -89,32 +115,22 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun likeById(id: Long) {
-       viewModelScope.launch {
-           try {
-               repository.likeById(id)
-           } catch (e: Exception) {
-               _dataState.value = FeedModelState(error = true)
-           }
-       }
+        viewModelScope.launch {
+            try {
+                repository.likeById(id)
+            } catch (e: Exception) {
+                _dataState.value = FeedModelState(error = true)
+            }
+        }
     }
 
     fun removeById(id: Long) {
         viewModelScope.launch {
             try {
                 repository.removeById(id)
-            } catch (e:Exception) {
+            } catch (e: Exception) {
                 _dataState.value = FeedModelState(error = true)
             }
-        }
-    }
-    fun saveNewPost() = viewModelScope.launch {
-        println("SAVE NEW POST")
-        try {
-            _dataState.value = FeedModelState(loading = true)
-            repository.saveNewPost()
-            _dataState.value = FeedModelState()
-        } catch (e:Exception) {
-            _dataState.value = FeedModelState(error = true)
         }
     }
 }

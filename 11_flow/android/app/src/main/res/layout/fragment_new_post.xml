@@ -6,30 +6,74 @@
     android:layout_height="match_parent"
     tools:context=".activity.NewPostFragment">
 
-    <EditText
-        android:id="@+id/edit"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="start|top"
-        android:inputType="textMultiLine"
-        android:background="@android:color/transparent"
-        />
+    <ScrollView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
 
-    <com.google.android.material.bottomappbar.BottomAppBar
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+
+            <EditText
+                android:id="@+id/edit"
+                android:layout_width="416dp"
+                android:layout_height="146dp"
+                android:background="@android:color/transparent"
+                android:gravity="start|top"
+                android:inputType="textMultiLine"
+                tools:text="@tools:sample/lorem[40]"/>
+
+            <FrameLayout
+                android:id="@+id/photoLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:id="@+id/photo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    tools:srcCompat="@tools:sample/avatars[3]" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/deletPhoto"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal |bottom"
+                    android:text="Clear" />
+
+            </FrameLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <LinearLayout
         android:id="@+id/bottomAppBar"
+        style="@style/Widget.MaterialComponents.BottomAppBar.Colored"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        style="@style/Widget.MaterialComponents.BottomAppBar.Colored"
-        />
+        android:background="@drawable/custom_button"
+        android:orientation="horizontal">
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/ok"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:contentDescription="@string/description_post_save"
-        app:srcCompat="@drawable/ic_ok_24dp"
-        app:layout_anchor="@id/bottomAppBar"
-        />
+        <ImageView
+            android:id="@+id/pickPhoto"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?selectableItemBackground"
+            android:padding="@dimen/common_spacing"
+            app:srcCompat="@drawable/ic_baseline_camera_alt_24" />
+
+        <ImageView
+            android:id="@+id/takePhoto"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?selectableItemBackground"
+            android:padding="@dimen/common_spacing"
+            app:srcCompat="@drawable/ic_baseline_attach_file_24" />
+
+    </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

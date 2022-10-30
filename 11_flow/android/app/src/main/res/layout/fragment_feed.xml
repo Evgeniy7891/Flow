@@ -70,6 +70,7 @@
         android:background="@drawable/custom_button"
         android:text="New Post"
         android:visibility="gone"
+        tools:visibility="visible"
         android:layout_marginTop="8dp"
         android:layout_gravity="top|center"
         android:textColor="#FFFFFF"

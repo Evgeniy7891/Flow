@@ -1,5 +1,6 @@
 package ru.netology.nmedia.adapter
 
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -7,10 +8,12 @@ import android.widget.PopupMenu
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import ru.netology.nmedia.BuildConfig
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.enumeration.AttachmentType
 import ru.netology.nmedia.view.loadCircleCrop
 
 interface OnInteractionListener {
@@ -18,6 +21,7 @@ interface OnInteractionListener {
     fun onEdit(post: Post) {}
     fun onRemove(post: Post) {}
     fun onShare(post: Post) {}
+    fun onPhoto(post: Post) {}
 }
 
 class PostsAdapter(
@@ -41,45 +45,69 @@ class PostViewHolder(
 
     fun bind(post: Post) {
         // проверка по статусу, если не прочитан, то не будет появляться в ресайкле
-        if (post.status == false) {
-            binding.status.visibility = View.GONE
-        }
-            binding.apply {
-                author.text = post.author
-                published.text = post.published
-                content.text = post.content
-                avatar.loadCircleCrop("${BuildConfig.BASE_URL}/avatars/${post.authorAvatar}")
-                like.isChecked = post.likedByMe
-                like.text = "${post.likes}"
+//        if (post.status == false) {
+//            binding.status.visibility = View.GONE
+//        }
+        binding.apply {
+            author.text = post.author
+            published.text = post.published
+            content.text = post.content
+            avatar.loadCircleCrop("${BuildConfig.BASE_URL}/avatars/${post.authorAvatar}")
+            like.isChecked = post.likedByMe
+            like.text = "${post.likes}"
 
-                menu.setOnClickListener {
-                    PopupMenu(it.context, it).apply {
-                        inflate(R.menu.options_post)
-                        setOnMenuItemClickListener { item ->
-                            when (item.itemId) {
-                                R.id.remove -> {
-                                    onInteractionListener.onRemove(post)
-                                    true
-                                }
-                                R.id.edit -> {
-                                    onInteractionListener.onEdit(post)
-                                    true
-                                }
+            Glide.with(avatar)
+                .load("http://192.168.0.104:9999/avatars/${post.authorAvatar}")
+                .placeholder(R.drawable.ic_add_24dp)
+                .error(R.drawable.ic_add_24dp)
+                .circleCrop()
+                .timeout(5_000)
+                .into(avatar)
 
-                                else -> false
-                            }
-                        }
-                    }.show()
-                }
+            if (attachment != null) {
+                when (post.attachment?.type) {
+                    AttachmentType.IMAGE -> {
 
-                like.setOnClickListener {
-                    onInteractionListener.onLike(post)
-                }
-
-                share.setOnClickListener {
-                    onInteractionListener.onShare(post)
+                        Glide.with(attachment)
+                            .load("http://192.168.0.104:9999/media/${post.attachment?.url}")
+                            .timeout(5_000)
+                            .into(attachment)
+                        attachment.visibility = View.VISIBLE
+                    }
+                    else -> {}
                 }
             }
+            binding.attachment.setOnClickListener {
+                onInteractionListener.onPhoto(post)
+            }
+            menu.setOnClickListener {
+                PopupMenu(it.context, it).apply {
+                    inflate(R.menu.options_post)
+                    setOnMenuItemClickListener { item ->
+                        when (item.itemId) {
+                            R.id.remove -> {
+                                onInteractionListener.onRemove(post)
+                                true
+                            }
+                            R.id.edit -> {
+                                onInteractionListener.onEdit(post)
+                                true
+                            }
+
+                            else -> false
+                        }
+                    }
+                }.show()
+            }
+
+            like.setOnClickListener {
+                onInteractionListener.onLike(post)
+            }
+
+            share.setOnClickListener {
+                onInteractionListener.onShare(post)
+            }
+        }
     }
 }
 
