@@ -71,7 +71,7 @@ interface PostsApiService {
     suspend fun uploadPhoto(@Part part: MultipartBody.Part): Response<Media>
 
     @FormUrlEncoded
-    @POST("user/authentication")
+    @POST("users/authentication")
     suspend fun updateUser(@Field("login") login: String, @Field("pass") pass:String): Response<Token>
 }
 
