@@ -24,7 +24,8 @@
                 android:background="@android:color/transparent"
                 android:gravity="start|top"
                 android:inputType="textMultiLine"
-                tools:text="@tools:sample/lorem[40]"/>
+                tools:text="@tools:sample/lorem[40]"
+               />
 
             <FrameLayout
                 android:id="@+id/photoLayout"

@@ -1,5 +1,6 @@
 package ru.netology.nmedia.api
 
+import okhttp3.Interceptor
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -8,8 +9,10 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
 import ru.netology.nmedia.BuildConfig
+import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.dto.Media
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.dto.Token
 
 //private const val BASE_URL = "${BuildConfig.BASE_URL}/api/slow/"
 private const val BASE_URL = "http://192.168.0.104:9999/api/slow/"
@@ -18,6 +21,17 @@ private val logging = HttpLoggingInterceptor().apply {
     if (BuildConfig.DEBUG) {
         level = HttpLoggingInterceptor.Level.BODY
     }
+}
+
+// создаем интерцептор который будет вставлять в каждый запрос токен
+private val authInterceptor = Interceptor { chain ->
+    val request = AppAuth.getInstance().data.value?.token?.let {
+        chain.request()
+            .newBuilder()
+            .addHeader("Autorization", it)
+            .build()
+    } ?: chain.request()
+    chain.proceed(request)
 }
 
 private val okhttp = OkHttpClient.Builder()
@@ -55,6 +69,10 @@ interface PostsApiService {
     @Multipart
     @POST("media")
     suspend fun uploadPhoto(@Part part: MultipartBody.Part): Response<Media>
+
+    @FormUrlEncoded
+    @POST("user/authentication")
+    suspend fun updateUser(@Field("login") login: String, @Field("pass") pass:String): Response<Token>
 }
 
 object PostsApi {

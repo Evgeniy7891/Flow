@@ -1,5 +1,7 @@
 package ru.netology.nmedia.activity
 
+
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -20,12 +22,15 @@ import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostsAdapter
 import ru.netology.nmedia.databinding.FragmentFeedBinding
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.viewmodel.AuthViewModel
 import ru.netology.nmedia.viewmodel.PostViewModel
 import kotlin.concurrent.thread
 
 class FeedFragment : Fragment() {
 
     private val viewModel: PostViewModel by viewModels(ownerProducer = ::requireParentFragment)
+
+    private val authViewModel: AuthViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -51,7 +56,11 @@ class FeedFragment : Fragment() {
             }
 
             override fun onLike(post: Post) {
-                viewModel.likeById(post.id)
+                if (authViewModel.autorized) {
+                    viewModel.likeById(post.id)
+                } else {
+                    createDialog()
+                }
             }
 
             override fun onRemove(post: Post) {
@@ -118,9 +127,26 @@ class FeedFragment : Fragment() {
         }
 
         binding.fab.setOnClickListener {
-            findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
+            if (authViewModel.autorized) {
+                findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
+            } else {
+                createDialog()
+            }
         }
 
         return binding.root
+    }
+
+    private fun createDialog() {
+        val builder = AlertDialog.Builder(context)
+        builder.setTitle("You are not logged in. ")
+        builder.setMessage("Do you want to come in?")
+        builder.setNegativeButton("No") { dialog, i ->
+            findNavController().navigate(R.id.feedFragment)
+        }
+        builder.setPositiveButton("Yes") { dialog, i ->
+            findNavController().navigate(R.id.action_feedFragment_to_authorizationFragment)
+        }
+        builder.show()
     }
 }
