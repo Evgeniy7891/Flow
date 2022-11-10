@@ -1,16 +1,12 @@
 package ru.netology.nmedia.viewmodel
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.dto.Token
 import ru.netology.nmedia.model.FeedModelState
 import ru.netology.nmedia.repository.AuthRepository
 
-class AuthorizationViewModel(application: Application) : AndroidViewModel(application) {
+class AuthorizationViewModel() : ViewModel() {
 
     private val repository = AuthRepository()
 

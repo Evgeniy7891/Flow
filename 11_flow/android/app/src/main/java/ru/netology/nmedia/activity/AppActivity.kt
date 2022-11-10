@@ -21,7 +21,6 @@ import ru.netology.nmedia.dto.Token
 import ru.netology.nmedia.viewmodel.AuthViewModel
 
 class AppActivity : AppCompatActivity(R.layout.activity_app) {
-    private val token: Token? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,7 +64,6 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
                     when (menuItem.itemId) {
                         R.id.signIn -> {
                             findNavController(R.id.nav_host_fragment).navigate(R.id.authorizationFragment)
-                            token?.let { AppAuth.getInstance().setAuth(it.id, it.token!!) }
                             true
                         }
                         R.id.signUp -> {
