@@ -1,34 +1,33 @@
 package ru.netology.nmedia.activity
 
-
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.MainThread
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.R
-import ru.netology.nmedia.adapter.OnInteractionListener
-import ru.netology.nmedia.adapter.PostsAdapter
+import ru.netology.nmedia.application.adapter.OnInteractionListener
+import ru.netology.nmedia.application.adapter.PostsAdapter
 import ru.netology.nmedia.databinding.FragmentFeedBinding
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.viewmodel.AuthViewModel
 import ru.netology.nmedia.viewmodel.PostViewModel
-import kotlin.concurrent.thread
 
+@AndroidEntryPoint
 class FeedFragment : Fragment() {
 
-    private val viewModel: PostViewModel by viewModels(ownerProducer = ::requireParentFragment)
+   // private val viewModel: PostViewModel by viewModels(ownerProducer = ::requireParentFragment)
+
+    private val viewModel: PostViewModel by activityViewModels()
 
     private val authViewModel: AuthViewModel by viewModels()
 
@@ -46,7 +45,7 @@ class FeedFragment : Fragment() {
                 val photo = post.attachment?.url
 //                bundle.putString("MyArg", photo)
                 val action = FeedFragmentDirections.actionFeedFragmentToPhotoFragment(photo!!)
-                //               findNavController().navigate(R.id.action_feedFragment_to_photoFragment, bundle)
+                // findNavController().navigate(R.id.action_feedFragment_to_photoFragment, bundle)
                 findNavController().navigate(action)
 
             }
@@ -80,7 +79,8 @@ class FeedFragment : Fragment() {
             }
         })
         binding.list.adapter = adapter
-        viewModel.dataState.observe(viewLifecycleOwner) { state ->
+
+        viewModel.dataState.observe(viewLifecycleOwner, { state ->
             binding.progress.isVisible = state.loading
             binding.swiperefresh.isRefreshing = state.refreshing
             if (state.error) {
@@ -88,7 +88,7 @@ class FeedFragment : Fragment() {
                     .setAction(R.string.retry_loading) { viewModel.loadPosts() }
                     .show()
             }
-        }
+        })
 
         viewModel.data.observe(viewLifecycleOwner) { state ->
             val newPost = state.posts.size > adapter.currentList.size
@@ -136,7 +136,6 @@ class FeedFragment : Fragment() {
 
         return binding.root
     }
-
     private fun createDialog() {
         val builder = AlertDialog.Builder(context)
         builder.setTitle("You are not logged in. ")

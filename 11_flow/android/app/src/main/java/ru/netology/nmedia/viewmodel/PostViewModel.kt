@@ -3,7 +3,9 @@ package ru.netology.nmedia.viewmodel
 import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.*
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flatMapLatest
@@ -20,6 +22,7 @@ import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.repository.PostRepositoryImpl
 import ru.netology.nmedia.util.SingleLiveEvent
 import java.io.File
+import javax.inject.Inject
 import kotlin.coroutines.EmptyCoroutineContext
 
 private val empty = Post(
@@ -35,22 +38,26 @@ private val empty = Post(
 )
 private val noPhoto = PhotoModel()
 
-class PostViewModel(application: Application) : AndroidViewModel(application) {
-    // упрощённый вариант
-    private val repository: PostRepository =
-        PostRepositoryImpl(AppDb.getInstance(context = application).postDao())
 
-    val data: LiveData<FeedModel> = AppAuth.getInstance().data.map {
-        it?.id ?: 0L
-    }.flatMapLatest { id ->
-        repository.data
-            .map {
-                FeedModel(it.map { post ->
-                    post.copy(ownedByMe = post.authorId == id)
-                }, it.isEmpty()
-                )
-            }
-    }.asLiveData(Dispatchers.Default)
+@HiltViewModel
+@OptIn(ExperimentalCoroutinesApi::class)
+class PostViewModel @Inject constructor(
+    private val repository: PostRepository,
+    private val appAuth: AppAuth
+) : ViewModel() {
+
+    val data: LiveData<FeedModel> = appAuth
+        .authStateFlow
+        .flatMapLatest { (id, _) ->
+            repository.data
+                .map { posts->
+                    FeedModel(
+                        posts.map {
+                            it.copy(ownedByMe = it.authorId == id)
+                        }, posts.isEmpty()
+                    )
+                }
+        }.asLiveData(Dispatchers.Default)
 
     private val _dataState = MutableLiveData<FeedModelState>()
     val dataState: LiveData<FeedModelState>

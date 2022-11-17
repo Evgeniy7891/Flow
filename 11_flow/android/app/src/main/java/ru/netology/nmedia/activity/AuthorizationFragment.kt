@@ -8,17 +8,22 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.R
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.databinding.FragmentAuthorizationBinding
 import ru.netology.nmedia.databinding.FragmentPhotoBinding
 import ru.netology.nmedia.viewmodel.AuthorizationViewModel
+import javax.inject.Inject
 
-
+@AndroidEntryPoint
 class AuthorizationFragment : Fragment() {
 
     private var _binding: FragmentAuthorizationBinding? = null
     private val binding get() = _binding!!
+
+    @Inject
+    lateinit var auth: AppAuth
 
     val viewModel: AuthorizationViewModel by viewModels()
 
@@ -35,7 +40,7 @@ class AuthorizationFragment : Fragment() {
             )
         }
         viewModel.data.observe(viewLifecycleOwner, {
-            AppAuth.getInstance().setAuth(it.id, it.token!!)
+            auth.setAuth(it.id, it.token!!)
             findNavController().navigateUp()
         })
 

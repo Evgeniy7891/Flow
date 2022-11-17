@@ -14,13 +14,26 @@ import androidx.navigation.findNavController
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.firebase.messaging.FirebaseMessaging
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.auth.AppAuth
-import ru.netology.nmedia.dto.Token
 import ru.netology.nmedia.viewmodel.AuthViewModel
+import javax.inject.Inject
 
+@AndroidEntryPoint // созд контейнер , что бы внедрять необходимые зависимости
 class AppActivity : AppCompatActivity(R.layout.activity_app) {
+
+    @Inject
+    lateinit var appAuth: AppAuth
+
+    @Inject
+    lateinit var firebaseMessaging: FirebaseMessaging
+
+    @Inject
+    lateinit var googleApiAvailability: GoogleApiAvailability
+
+    private val viewModel: AuthViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,45 +58,45 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
                 )
         }
 
-        lifecycleScope
-        checkGoogleApiAvailability()
-        val viewModel by viewModels<AuthViewModel>()
-        var currentMenuProvider: MenuProvider? = null
         viewModel.data.observe(this) {
-            currentMenuProvider?.also(::removeMenuProvider)
+            invalidateOptionsMenu()
+        }
 
-            addMenuProvider(object : MenuProvider {
-                override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                    menuInflater.inflate(R.menu.menu_main, menu)
-                    val authorized = viewModel.autorized
-                    menu.setGroupVisible(R.id.authorized, authorized)
-                    menu.setGroupVisible(R.id.unauthorized, !authorized)
-                }
 
-                override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
+        checkGoogleApiAvailability()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+
+        menu.let {
+            it.setGroupVisible(R.id.unauthorized, !viewModel.autorized)
+            it.setGroupVisible(R.id.authorized, viewModel.autorized)
+        }
+        return true
+    }
+
+                override fun onOptionsItemSelected(menuItem: MenuItem): Boolean =
                     when (menuItem.itemId) {
                         R.id.signIn -> {
                             findNavController(R.id.nav_host_fragment).navigate(R.id.authorizationFragment)
                             true
                         }
                         R.id.signUp -> {
-                            AppAuth.getInstance().setAuth(5, "x-token")
+                            appAuth.setAuth(5, "x-token")
                             true
                         }
                         R.id.logout -> {
-                            AppAuth.getInstance().removeAuth()
+                            appAuth.removeAuth()
                             true
                         }
-                        else -> false
+                        else -> super.onOptionsItemSelected(menuItem)
                     }
-            }.apply {
-                currentMenuProvider = this
-            })
-        }
-    }
+
+
 
     private fun checkGoogleApiAvailability() {
-        with(GoogleApiAvailability.getInstance()) {
+        with(googleApiAvailability) {
             val code = isGooglePlayServicesAvailable(this@AppActivity)
             if (code == ConnectionResult.SUCCESS) {
                 return@with
@@ -96,7 +109,7 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
                 .show()
         }
 
-        FirebaseMessaging.getInstance().token.addOnSuccessListener {
+        firebaseMessaging.token.addOnSuccessListener {
             println(it)
         }
     }

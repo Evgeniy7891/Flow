@@ -5,7 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
-import ru.netology.nmedia.entity.PostEntity
+import ru.netology.nmedia.enumeration.entity.PostEntity
 
 @Dao
 interface PostDao {
