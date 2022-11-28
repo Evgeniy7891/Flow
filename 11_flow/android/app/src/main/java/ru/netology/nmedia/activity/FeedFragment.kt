@@ -11,9 +11,12 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.paging.LoadState
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
 import ru.netology.nmedia.R
 import ru.netology.nmedia.application.adapter.OnInteractionListener
 import ru.netology.nmedia.application.adapter.PostsAdapter
@@ -25,7 +28,7 @@ import ru.netology.nmedia.viewmodel.PostViewModel
 @AndroidEntryPoint
 class FeedFragment : Fragment() {
 
-   // private val viewModel: PostViewModel by viewModels(ownerProducer = ::requireParentFragment)
+    // private val viewModel: PostViewModel by viewModels(ownerProducer = ::requireParentFragment)
 
     private val viewModel: PostViewModel by activityViewModels()
 
@@ -90,30 +93,47 @@ class FeedFragment : Fragment() {
             }
         })
 
-        viewModel.data.observe(viewLifecycleOwner) { state ->
-            val newPost = state.posts.size > adapter.currentList.size
-            adapter.submitList(state.posts) {
-                if (newPost) {
-                    binding.list.scrollToPosition(0)
-                }
+        lifecycleScope.launchWhenCreated {
+            viewModel.data.collectLatest {
+                adapter.submitData(it)
             }
-            binding.emptyText.isVisible = state.empty
-            // скролл вверх
-            // CoroutineScope(Dispatchers.Main).launch {
-            // delay(100)
-            // binding.list.scrollToPosition(0)
-            // }
         }
 
-        viewModel.newerCount.observe(viewLifecycleOwner) {
-            //подсчет непрочитанных постов
-            with(binding.buttonNewPost) {
-                if (it > 0) {
-                    text = "Новый пост - $it"
-                    visibility = View.VISIBLE
-                }
+        lifecycleScope.launchWhenCreated {
+            adapter.loadStateFlow.collectLatest {
+                it.refresh is LoadState.Loading
+                        || it.append is LoadState.Loading
+                        || it.prepend is LoadState.Loading
             }
         }
+
+        binding.swiperefresh.setOnRefreshListener {
+            adapter.refresh()
+        }
+//        observe(viewLifecycleOwner) { state ->
+//            val newPost = state.posts.size > adapter.currentList.size
+//            adapter.submitList(state.posts) {
+//                if (newPost) {
+//                    binding.list.scrollToPosition(0)
+//                }
+//            }
+//            binding.emptyText.isVisible = state.empty
+//            // скролл вверх
+//            // CoroutineScope(Dispatchers.Main).launch {
+//            // delay(100)
+//            // binding.list.scrollToPosition(0)
+//            // }
+//        }
+
+//        viewModel.newerCount.observe(viewLifecycleOwner) {
+//            //подсчет непрочитанных постов
+//            with(binding.buttonNewPost) {
+//                if (it > 0) {
+//                    text = "Новый пост - $it"
+//                    visibility = View.VISIBLE
+//                }
+//            }
+//        }
         binding.buttonNewPost.setOnClickListener {
             // убирается плашка после нажатия
             binding.buttonNewPost.visibility = View.GONE
@@ -136,6 +156,7 @@ class FeedFragment : Fragment() {
 
         return binding.root
     }
+
     private fun createDialog() {
         val builder = AlertDialog.Builder(context)
         builder.setTitle("You are not logged in. ")

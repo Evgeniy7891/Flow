@@ -19,7 +19,7 @@ class ApiModule {
 
     companion object {
         //private const val BASE_URL = "${BuildConfig.BASE_URL}/api/slow/"
-        private const val BASE_URL = "http://192.168.0.104:9999/api/slow/"
+        private const val BASE_URL = "http://192.168.0.105:9999/api/slow/"
     }
 
     @Provides // исполь в методах
