@@ -100,7 +100,7 @@ dependencies {
     implementation "com.github.bumptech.glide:glide:$glide_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
     implementation "com.google.android.gms:play-services-base:$play_services_base_version"
-
+    implementation "androidx.room:room-paging:$room_version"
     implementation "com.google.dagger:hilt-android:$hilt_version"
     implementation 'androidx.hilt:hilt-work:1.0.0'
     kapt "com.google.dagger:hilt-compiler:$hilt_version"

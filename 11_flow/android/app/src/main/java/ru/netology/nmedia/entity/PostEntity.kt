@@ -1,4 +1,4 @@
-package ru.netology.nmedia.enumeration.entity
+package ru.netology.nmedia.entity
 
 import androidx.room.Embedded
 import androidx.room.Entity

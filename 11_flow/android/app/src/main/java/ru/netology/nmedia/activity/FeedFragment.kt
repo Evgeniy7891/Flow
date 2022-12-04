@@ -18,8 +18,8 @@ import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import ru.netology.nmedia.R
-import ru.netology.nmedia.application.adapter.OnInteractionListener
-import ru.netology.nmedia.application.adapter.PostsAdapter
+import ru.netology.nmedia.adapter.OnInteractionListener
+import ru.netology.nmedia.adapter.PostsAdapter
 import ru.netology.nmedia.databinding.FragmentFeedBinding
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.viewmodel.AuthViewModel
@@ -50,7 +50,6 @@ class FeedFragment : Fragment() {
                 val action = FeedFragmentDirections.actionFeedFragmentToPhotoFragment(photo!!)
                 // findNavController().navigate(R.id.action_feedFragment_to_photoFragment, bundle)
                 findNavController().navigate(action)
-
             }
 
             override fun onEdit(post: Post) {
